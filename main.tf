@@ -17,3 +17,72 @@ resource "google_compute_subnetwork" "subnetwork" {
   region = "europe-west3"
   network = google_compute_network.vpc_network.id
 }
+
+resource "google_compute_instance" "cure1_rabbitmq" {
+    name         = "cure1-rabbitmq"
+    machine_type = "e2-micro"
+    zone         = "europe-west3-b"
+    
+    boot_disk {
+        initialize_params {
+        image = "ubuntu-minimal-2404-lts-amd64"
+        }
+    }
+    
+    network_interface {
+        network = google_compute_network.vpc_network.id
+        subnetwork = google_compute_subnetwork.subnetwork.id
+    
+        access_config {}
+    }
+    
+    metadata = {
+        ssh-keys = "cure1:${file("~/.ssh/id_rsa.pub")}"
+    }
+}
+
+resource "google_compute_instance" "cure1_app" {
+    name         = "cure1-app"
+    machine_type = "e2-micro"
+    zone         = "europe-west3-b"
+    
+    boot_disk {
+        initialize_params {
+        image = "ubuntu-minimal-2404-lts-amd64"
+        }
+    }
+    
+    network_interface {
+        network = google_compute_network.vpc_network.id
+        subnetwork = google_compute_subnetwork.subnetwork.id
+    
+        access_config {}
+    }
+    
+    metadata = {
+        ssh-keys = "cure1:${file("~/.ssh/id_rsa.pub")}"
+    }
+}
+
+resource "google_compute_instance" "mc_db" {
+    name         = "mc-db"
+    machine_type = "e2-micro"
+    zone         = "europe-west3-b"
+    
+    boot_disk {
+        initialize_params {
+        image = "ubuntu-minimal-2404-lts-amd64"
+        }
+    }
+    
+    network_interface {
+        network = google_compute_network.vpc_network.id
+        subnetwork = google_compute_subnetwork.subnetwork.id
+    
+        access_config {}
+    }
+    
+    metadata = {
+        ssh-keys = "cure1:${file("~/.ssh/id_rsa.pub")}"
+    }
+}
