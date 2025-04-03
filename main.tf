@@ -20,7 +20,7 @@ resource "google_compute_subnetwork" "subnetwork" {
 
 resource "google_compute_instance" "cure1_rabbitmq" {
     name         = "cure1-rabbitmq"
-    machine_type = "e2-micro"
+    machine_type = "e2-medium"
     zone         = "europe-west3-b"
     
     boot_disk {
@@ -43,7 +43,7 @@ resource "google_compute_instance" "cure1_rabbitmq" {
 
 resource "google_compute_instance" "cure1_app" {
     name         = "cure1-app"
-    machine_type = "e2-micro"
+    machine_type = "e2-medium"
     zone         = "europe-west3-b"
     
     boot_disk {
@@ -64,9 +64,9 @@ resource "google_compute_instance" "cure1_app" {
     }
 }
 
-resource "google_compute_instance" "mc_db" {
-    name         = "mc-db"
-    machine_type = "e2-micro"
+resource "google_compute_instance" "cure1_db" {
+    name         = "cure1-db"
+    machine_type = "e2-medium"
     zone         = "europe-west3-b"
     
     boot_disk {
@@ -131,4 +131,27 @@ resource "google_compute_firewall" "allow_dbrabbitmq" {
     }
     priority = 900 //it is higher than the deny rule
     //source_ranges = ["your_ip"]   
+}
+
+locals {
+  app_ip = google_compute_instance.cure1_app.network_interface[0].access_config[0].nat_ip
+  db_ip = google_compute_instance.cure1_db.network_interface[0].access_config[0].nat_ip
+  rabbitmq_ip = google_compute_instance.cure1_rabbitmq.network_interface[0].access_config[0].nat_ip
+}
+
+resource "local_file" "ansible_inventory" {
+    content = <<-EOF
+all:
+  hosts:
+    app:
+      ansible_host = ${local.app_ip}
+    db:
+      ansible_host = ${local.db_ip}
+    rabbitmq:
+      ansible_host = ${local.rabbitmq_ip}
+    vars:
+      ansible_user: cure1
+      ansible_ssh_private_key_file: ~/.ssh/id_rsa
+EOF
+    filename = "${path.module}/../Ansible/inventory.yml"
 }
