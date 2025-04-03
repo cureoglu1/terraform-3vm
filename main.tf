@@ -86,3 +86,49 @@ resource "google_compute_instance" "mc_db" {
         ssh-keys = "cure1:${file("~/.ssh/id_rsa.pub")}"
     }
 }
+
+resource "google_compute_firewall" "firewall_general" {
+    name = "cure1-firewall-general"
+    network = google_compute_network.vpc_network.id
+
+    deny {
+        protocol = "all"
+    }
+
+    priority = 1000
+    source_ranges = ["0.0.0.0/0"]
+
+}
+
+resource "google_compute_firewall" "allow_ssh" {
+  name = "cure1-allow-ssh"
+  network = google_compute_network.vpc_network.id
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+  priority = 900 //it is higher than the deny rule
+  //source_ranges = ["your_ip"] //if you want to restrict access to your IP
+}
+
+resource "google_compute_firewall" "allow_http" {
+  name = "cure1-allow-http"
+  network = google_compute_network.vpc_network.id
+  allow {
+    protocol = "tcp"
+    ports    = ["80"]
+  }
+  priority = 900 //it is higher than the deny rule
+  //source_ranges = ["your_ip"] 
+}
+
+resource "google_compute_firewall" "allow_dbrabbitmq" {
+    name = "cure1-allow-dbrabbitmq"
+    network = google_compute_network.vpc_network.id
+    allow {
+        protocol = "tcp"
+        ports    = ["3306","15672"]
+    }
+    priority = 900 //it is higher than the deny rule
+    //source_ranges = ["your_ip"]   
+}
